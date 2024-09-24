@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TeamLogic IT Outsourced Help Desk ROI Calculator</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #f5f6f7, #dfe9f3);
+            color: #272023;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            display: block;
+        }
+        .calculator {
+            background: #018752;
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .calculator h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .input-group input {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            width: 460px;
+            font-size: 14px;
+            color: #272023;
+        }
+        .tooltip {
+            font-size: 12px;
+            color: #ddd;
+            margin-top: 5px;
+        }
+        .result {
+            margin-top: 20px;
+            background: #ffffff;
+            color: #272023;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            text-align: left;
+            opacity: 0;
+        }
+        .result.show {
+            opacity: 1;
+        }
+        button {
+            width: 460px;
+            padding: 12px;
+            background-color: #272023;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #1e1b1a;
+        }
+        .chart {
+            margin-top: 20px;
+            width: 460px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>TeamLogic IT Outsourced Help Desk ROI Calculator</h2>
+    <div class="input-group">
+        <label for="technicians"><i class="fas fa-users"></i> Technicians Required:</label>
+        <input type="number" id="technicians" placeholder="Enter number of technicians">
+        <div class="tooltip">Number of technicians required to handle the workload.</div>
+    </div>
+    <div class="input-group">
+        <label for="annual-wage"><i class="fas fa-dollar-sign"></i> Average Annual Wages of a Technician ($):</label>
+        <input type="number" id="annual-wage" value="60000">
+        <div class="tooltip">Default based on industry average annual salary.</div>
+    </div>
+    <div class="input-group">
+        <label for="burdened-rate"><i class="fas fa-percent"></i> Fully Burdened Rate (%):</label>
+        <input type="number" id="burdened-rate" value="30">
+        <div class="tooltip">Includes benefits, taxes, and other overheads.</div>
+    </div>
+    <div class="input-group">
+        <label for="training-cost"><i class="fas fa-graduation-cap"></i> Annual Training & Certification Cost ($):</label>
+        <input type="number" id="training-cost" value="5000">
+        <div class="tooltip">Estimated cost for maintaining certifications and skills.</div>
+    </div>
+    <div class="input-group">
+        <label for="turnover-cost"><i class="fas fa-exchange-alt"></i> Average Turnover Cost ($):</label>
+        <input type="number" id="turnover-cost" value="15000">
+        <div class="tooltip">Turnover costs can range from $10,000 to $30,000, including recruitment, onboarding, and lost productivity.</div>
+    </div>
+    <div class="input-group">
+        <label for="outsourced-cost"><i class="fas fa-headset"></i> Monthly Cost of Outsourced IT ($):</label>
+        <input type="number" id="outsourced-cost" placeholder="Enter outsourced IT cost">
+        <div class="tooltip">Monthly cost of using outsourced IT services.</div>
+    </div>
+    <button onclick="calculateROI()">Calculate ROI</button>
+    <button onclick="resetCalculator()">Reset</button>
+    <div class="result" id="result"></div>
+</div>
+
+<canvas id="savingsChart" class="chart" width="400" height="200"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let chart; // Define chart variable globally
+
+    function calculateROI() {
+        const technicians = parseInt(document.getElementById('technicians').value);
+        const annualWage = parseFloat(document.getElementById('annual-wage').value);
+        const burdenedRate = parseFloat(document.getElementById('burdened-rate').value) / 100;
+        const trainingCost = parseFloat(document.getElementById('training-cost').value);
+        const turnoverCost = parseFloat(document.getElementById('turnover-cost').value);
+        const outsourcedCost = parseFloat(document.getElementById('outsourced-cost').value) * 12;
+
+        // Adjusted turnover rate assumption
+        const turnoverRate = 0.15; // Assuming a 15% turnover rate based on industry averages
+        const adjustedTurnoverCost = turnoverCost * turnoverRate;
+
+        const totalInternalCost = technicians * (annualWage * (1 + burdenedRate) + trainingCost + adjustedTurnoverCost);
+        const savings = totalInternalCost - outsourcedCost;
+        const savingsPercentage = (savings / totalInternalCost) * 100;
+
+        const formatCurrency = num => num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+        document.getElementById('result').innerHTML = `
+            <strong>Assumptions:</strong><br>
+            - Each technician handles an average of 70 tickets per month.<br>
+            - Fully burdened rate includes taxes, benefits, and overhead.<br>
+            - Turnover costs are adjusted to reflect an industry-average turnover rate of 15%<br>
+            - Outsourced IT assumes 24/7 support and advanced security measures.<br><br>
+            <strong>Results:</strong><br>
+            Total Internal IT Cost: ${formatCurrency(totalInternalCost)}<br>
+            Total Outsourced IT Cost: ${formatCurrency(outsourcedCost)}<br>
+            Potential Savings: ${formatCurrency(savings)} (${savingsPercentage.toFixed(2)}%)<br>
+        `;
+
+        document.getElementById('result').classList.add('show');
+
+        renderChart([totalInternalCost, outsourcedCost], ['Internal IT Cost', 'Outsourced IT Cost']);
+    }
+
+    function resetCalculator() {
+        document.getElementById('technicians').value = '';
+        document.getElementById('annual-wage').value = 60000;
+        document.getElementById('burdened-rate').value = 30;
+        document.getElementById('training-cost').value = 5000;
+        document.getElementById('turnover-cost').value = 15000;
+        document.getElementById('outsourced-cost').value = '';
+        document.getElementById('result').innerHTML = ''; // Clears the result content
+        document.getElementById('result').classList.remove('show'); // Hides the result output
+
+        if (chart) {
+            chart.destroy(); // Clear the previous chart before rendering a new one
+        }
+    }
+
+    function renderChart(data, labels) {
+        const ctx = document.getElementById('savingsChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cost Comparison',
+                    data: data,
+                    backgroundColor: ['#272023', '#018752'], // Internal IT in secondary color, Outsourced IT in primary color
+                }]
+            },
+            options: {
+                scales: {
+                             y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
